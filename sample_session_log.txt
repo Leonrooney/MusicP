@@ -1,0 +1,66 @@
+Sample Session Log - ABC Synthesizer
+
+=== ABC Synth Menu ===
+1- Selecting a waveform           [current: sine]
+2- Setting the loudness           [current: 0.80]
+3- Indicating the ABC file path   [current: not set]
+4- Changing speed (BPM)           [current: 120]
+5- Shifting pitch (semitones)     [current: 0]
+6- Adding background noise        [current: off lvl=0.00 env=off]
+7- Mixing within an external WAV  [current: off (level 0.50)]
+8- Playing the file
+9- Saving the music as a WAV file
+10- Exit
+11- Saving the music as a MIDI file
+Select option (1-11): 3
+Enter ABC file path: test.abc
+Loaded: Cursor Demo Tune (BPM 120, Key C)
+
+=== ABC Synth Menu ===
+1- Selecting a waveform           [current: sine]
+2- Setting the loudness           [current: 0.80]
+3- Indicating the ABC file path   [current: test.abc]
+4- Changing speed (BPM)           [current: 120]
+5- Shifting pitch (semitones)     [current: 0]
+6- Adding background noise        [current: off lvl=0.00 env=off]
+7- Mixing within an external WAV  [current: off (level 0.50)]
+8- Playing the file
+9- Saving the music as a WAV file
+10- Exit
+11- Saving the music as a MIDI file
+Select option (1-11): 9
+Output WAV path (e.g., output.wav): output.wav
+Saved: output.wav
+
+=== ABC Synth Menu ===
+1- Selecting a waveform           [current: sine]
+2- Setting the loudness           [current: 0.80]
+3- Indicating the ABC file path   [current: test.abc]
+4- Changing speed (BPM)           [current: 120]
+5- Shifting pitch (semitones)     [current: 0]
+6- Adding background noise        [current: off lvl=0.00 env=off]
+7- Mixing within an external WAV  [current: off (level 0.50)]
+8- Playing the file
+9- Saving the music as a WAV file
+10- Exit
+11- Saving the music as a MIDI file
+Select option (1-11): 11
+Output MIDI path (e.g., output.mid): output.mid
+Saved: output.mid
+
+=== ABC Synth Menu ===
+1- Selecting a waveform           [current: sine]
+2- Setting the loudness           [current: 0.80]
+3- Indicating the ABC file path   [current: test.abc]
+4- Changing speed (BPM)           [current: 120]
+5- Shifting pitch (semitones)     [current: 0]
+6- Adding background noise        [current: off lvl=0.00 env=off]
+7- Mixing within an external WAV  [current: off (level 0.50)]
+8- Playing the file
+9- Saving the music as a WAV file
+10- Exit
+11- Saving the music as a MIDI file
+Select option (1-11): 10
+Goodbye!
+
+

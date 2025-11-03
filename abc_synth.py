@@ -2,6 +2,31 @@
 """
 abc_synth.py — Menu-driven ABC synthesizer
 
+Usage
+-----
+Run: python3 abc_synth.py
+
+Menu Options:
+1) Select waveform: sine | square | sawtooth | triangle
+2) Set loudness (0.0–1.0 master gain)
+3) Indicate ABC file path
+4) Change speed (BPM)
+5) Shift pitch (semitones)
+6) Add background noise (white/pink/brown) with optional envelope
+7) Mix external WAV
+8) Play
+9) Save as WAV
+10) Exit
+11) Save as MIDI (requires mido library)
+
+Dependencies:
+- Required: numpy
+- Optional playback: simpleaudio
+- Optional MIDI export: mido
+
+Install:
+python3 -m pip install --user numpy simpleaudio mido
+
 Features
 --------
 1) Select waveform: sine | square | sawtooth | triangle
@@ -14,6 +39,7 @@ Features
 8) Play
 9) Save as WAV
 10) Exit
+11) Save as MIDI
 
 ABC support (required + some extras)
 ------------------------------------
@@ -23,7 +49,8 @@ Body   : A–G/a–g notes, commas and apostrophes for octaves, numbers, /, rest
 
 ADSR envelope is applied to every synthesized note.
 
-Tested with Python 3.10+. Requires numpy. Playback uses simpleaudio if installed.
+Tested with Python 3.9+. Requires numpy. Playback uses simpleaudio if installed.
+MIDI export requires mido library.
 """
 
 from __future__ import annotations
@@ -44,6 +71,14 @@ try:
     _SIMPLEAUDIO_OK = True
 except Exception:
     _SIMPLEAUDIO_OK = False
+
+# Optional MIDI export
+_MIDO_OK = False
+try:
+    import mido
+    _MIDO_OK = True
+except Exception:
+    _MIDO_OK = False
 
 _IS_WINDOWS = sys.platform.startswith("win")
 if _IS_WINDOWS:
@@ -550,6 +585,67 @@ def play_audio(signal: np.ndarray, sr: int = 44100):
         print("Playback requires `simpleaudio` (pip install simpleaudio). Saving still works.")
 
 
+# ----------------------- MIDI Export -----------------------
+
+def save_midi(path: str, score: ABCScore, bpm: int, pitch_shift_semitones: int, loudness: float):
+    """
+    Save ABC score as MIDI file.
+    
+    Args:
+        path: Output file path (will append .mid if missing)
+        score: Parsed ABC score
+        bpm: Tempo in BPM
+        pitch_shift_semitones: Pitch shift to apply
+        loudness: Master gain (0-1), mapped to MIDI velocity (20-110)
+    """
+    if not _MIDO_OK:
+        print("MIDI export requires 'mido'. Install with: python3 -m pip install --user mido")
+        return
+    
+    # Ensure .mid extension
+    if not path.lower().endswith('.mid'):
+        path += '.mid'
+    
+    # Create MIDI file with one track
+    ticks_per_beat = 480
+    mid = mido.MidiFile(ticks_per_beat=ticks_per_beat)
+    track = mido.MidiTrack()
+    mid.tracks.append(track)
+    
+    # Add tempo meta message (microseconds per quarter note)
+    microseconds_per_beat = int(60000000 / bpm)
+    track.append(mido.MetaMessage('set_tempo', tempo=microseconds_per_beat, time=0))
+    
+    # Map loudness (0-1) to MIDI velocity (20-110)
+    velocity = int(20 + (loudness * 90))
+    velocity = max(20, min(110, velocity))
+    
+    accumulated_time = 0
+    
+    for note in score.notes:
+        # Convert duration from beats to ticks
+        duration_ticks = int(round(note.duration_beats * ticks_per_beat))
+        
+        if note.midi is not None:
+            # Apply pitch shift
+            midi_note = note.midi + pitch_shift_semitones
+            # Clamp to valid MIDI range (0-127)
+            midi_note = max(0, min(127, midi_note))
+            
+            # Note on (time relative to last message - accumulated time from rests)
+            track.append(mido.Message('note_on', note=midi_note, velocity=velocity, time=accumulated_time))
+            # Note off after duration
+            track.append(mido.Message('note_off', note=midi_note, velocity=velocity, time=duration_ticks))
+            accumulated_time = 0  # Reset for next note
+        else:
+            # Rest: accumulate silence (will be added to next note_on time)
+            accumulated_time += duration_ticks
+    
+    # Save file
+    mid.save(path)
+    print(f"Saved: {path}")
+
+
 # ----------------------- Menu App -----------------------
 
 @dataclass
@@ -566,7 +662,7 @@ class MenuApp:
     def run(self):
         while True:
             self.show_menu()
-            choice = input("Select option (1-10): ").strip()
+            choice = input("Select option (1-11): ").strip()
             handlers = {
                 '1': self.menu_waveform,
                 '2': self.menu_loudness,
@@ -578,6 +674,7 @@ class MenuApp:
                 '8': self.menu_play,
                 '9': self.menu_save,
                 '10': self.menu_exit,
+                '11': self.menu_save_midi,
             }
             if choice in handlers:
                 try:
@@ -602,6 +699,7 @@ class MenuApp:
         print(f"8- Playing the file")
         print(f"9- Saving the music as a WAV file")
         print(f"10- Exit")
+        print(f"11- Saving the music as a MIDI file")
 
     # ---- menu handlers ----
     def menu_waveform(self):
@@ -733,6 +831,15 @@ class MenuApp:
             out += '.wav'
         save_wav(out, audio, self.state.settings.sr)
         print(f"Saved: {out}")
+
+    def menu_save_midi(self):
+        score = self.load_score()
+        if score is None:
+            return
+        out = input("Save MIDI file as (e.g., output.mid): ").strip().strip('"')
+        save_midi(out, score, self.state.settings.bpm, 
+                 self.state.settings.pitch_shift_semitones, 
+                 self.state.settings.loudness)
 
     def menu_exit(self):
         print("Goodbye!")

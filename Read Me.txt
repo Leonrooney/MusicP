@@ -1,0 +1,38 @@
+OS: macOS
+
+IDE: VS Code / Terminal
+
+Python: Python 3.9.6
+
+Dependencies:
+- Required: numpy
+- Optional playback: simpleaudio
+- Optional MIDI export: mido
+
+Install:
+python3 -m pip install --user numpy simpleaudio mido
+
+Run:
+python3 abc_synth.py
+
+Notes:
+If using --user installs, ensure PATH includes ~/Library/Python/3.9/bin
+
+MIDI Export Commands:
+
+	•	Use menu option 11 to export ABC music as a MIDI file.
+
+	•	The program will prompt: "Save MIDI file as:"
+
+	•	Example usage:
+
+3  →  /Users/leonrooney/Code/MusicP/test.abc
+
+11 →  output.mid
+
+	•	To play the resulting file, open it in QuickTime, GarageBand, or MuseScore.
+
+	•	If the program says "MIDI export requires 'mido'", install it with:
+
+python3 -m pip install --user mido
+
